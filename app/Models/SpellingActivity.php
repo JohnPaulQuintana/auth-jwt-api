@@ -16,8 +16,18 @@ class SpellingActivity extends Model
 
     public function lesson()
     {
-        return $this->belongsTo(Lesson::class);
+        return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
+    //has many user attempts
+    public function attempts()
+    {
+        return $this->hasMany(SpellingAttempt::class, 'spelling_activity_id');
+    }
 
+    //has many users through attempts
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'spelling_attempts');
+    }
 }

@@ -23,17 +23,19 @@ class Lesson extends Model
 
     public function exercises()
     {
-        return $this->hasMany(ReadingExercise::class);
+        return $this->hasMany(ReadingExercise::class, 'lesson_id');
     }
 
     public function spelling_activities()
     {
-        return $this->hasMany(SpellingActivity::class);
+        return $this->hasMany(SpellingActivity::class, 'lesson_id');
     }
 
     public function pictures()
     {
-        return $this->hasMany(Picture::class);
+        return $this->hasMany(Picture::class, 'lesson_id');
     }
+
+
 
 }

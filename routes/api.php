@@ -4,9 +4,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\PictureAttemptController;
 use App\Http\Controllers\Api\PictureController;
+use App\Http\Controllers\Api\ReadingAttemptController;
 use App\Http\Controllers\Api\ReadingExerciseController;
 use App\Http\Controllers\Api\SpellingActivityController as ApiSpellingActivityController;
+use App\Http\Controllers\Api\SpellingAttemptController;
 use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\SpellingController;
 
@@ -28,7 +31,17 @@ Route::middleware(['auth:api'])->group(function () {
     //Lesson Route
     Route::get('/student/{id}/teacher', [LessonController::class, 'get_teacherId']);
     Route::get('/lesson/{lesson_id}/activities', [LessonController::class, 'getLessonActivities']);
-    
+
+    //spelling attempt
+    Route::post('/spelling-attempts', [SpellingAttemptController::class, 'store']);
+    Route::get('/spelling-attempts/user/{user_id}', [SpellingAttemptController::class, 'getByUser']);
+
+    //picture attempt
+     Route::post('/picture-attempts', [PictureAttemptController::class, 'store']);
+
+    //reading attempt
+    Route::post('/reading-attempts', [ReadingAttemptController::class, 'store']);
+
     // Only admin & dev can manage users
     Route::middleware(['role:administrator,developer'])->group(function () {
         Route::get('/users', [UserManagementController::class, 'index']);
@@ -43,6 +56,15 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/lessons', [LessonController::class, 'index']); // fetch lessons
         Route::post('/lesson', [LessonController::class, 'store']);
 
+         //lesson and activities screen
+        Route::get('/teacher/{id}/lessons', [LessonController::class, 'lesson_and_student_records']);
+
+        //home screen for teacher
+        Route::get('/teacher/{id}/stats', [LessonController::class, 'home_screen']);
+
+        //report screen for teacher
+        Route::get('/teacher/{id}/report', [LessonController::class, 'report_screen']);
+        
         //Reading Exercise Routes
         Route::get('/lessons/{id}/exercises', [ReadingExerciseController::class, 'index']);
         Route::post('/exercises', [ReadingExerciseController::class, 'store']);
@@ -60,6 +82,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/spelling-activities', [ApiSpellingActivityController::class, 'store']);
         Route::put('/spelling-activities/{id}', [ApiSpellingActivityController::class, 'update']);
         Route::delete('/spelling-activities/{id}', [ApiSpellingActivityController::class, 'destroy']);
+
+
+
     });
 });
 

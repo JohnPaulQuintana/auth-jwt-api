@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\PictureAttemptController;
 use App\Http\Controllers\Api\PictureController;
@@ -12,11 +13,14 @@ use App\Http\Controllers\Api\SpellingActivityController as ApiSpellingActivityCo
 use App\Http\Controllers\Api\SpellingAttemptController;
 use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\SpellingController;
-
+use App\Http\Controllers\Api\TeacherController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/forgot-password', [UserManagementController::class, 'resetPassword']);
+// Route::post('/forgot-password', [UserManagementController::class, 'resetPassword']);
+//
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
 
 Route::middleware(['auth:api'])->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
@@ -43,10 +47,19 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/reading-attempts', [ReadingAttemptController::class, 'store']);
 
     // Only admin & dev can manage users
-    Route::middleware(['role:administrator,developer'])->group(function () {
+    Route::middleware(['role:administrator,developer,teacher'])->group(function () {
         Route::get('/users', [UserManagementController::class, 'index']);
         Route::post('/users', [UserManagementController::class, 'store']);
         Route::put('/users/{id}/role', [UserManagementController::class, 'updateRole']);
+
+        //reset student password
+        Route::post('student/{id}/reset-password', [TeacherController::class, 'resetStudentPassword']);
+
+        //Teachers
+        Route::get('/teachers', [TeacherController::class, 'getTeachers']);
+        Route::post('/teachers', [TeacherController::class, 'storeTeacher']);
+        Route::post('/teacher/{id}', [TeacherController::class, 'updateProfileById']);
+        Route::delete('/teachers/{id}', [TeacherController::class, 'deleteTeacher']);
 
         //Spelling Routes
         Route::post('/spelling', [SpellingController::class, 'saveLevels']);
@@ -64,7 +77,7 @@ Route::middleware(['auth:api'])->group(function () {
 
         //report screen for teacher
         Route::get('/teacher/{id}/report', [LessonController::class, 'report_screen']);
-        
+
         //Reading Exercise Routes
         Route::get('/lessons/{id}/exercises', [ReadingExerciseController::class, 'index']);
         Route::post('/exercises', [ReadingExerciseController::class, 'store']);

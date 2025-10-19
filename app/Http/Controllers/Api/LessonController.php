@@ -211,6 +211,14 @@ class LessonController extends Controller
         $lessons = Lesson::where('teacher_id', $id)->get();
         $lessonIds = $lessons->pluck('id');
 
+        //all activities by lesson
+        $pictureCount = Picture::whereIn('lesson_id', $lessonIds)->count();
+        $spellingCount = SpellingActivity::whereIn('lesson_id', $lessonIds)->count();
+        $readingCount = ReadingExercise::whereIn('lesson_id', $lessonIds)->count();
+
+        $totalCount = $pictureCount + $spellingCount + $readingCount;
+
+
         // 🔹 Reading Activities
         $reading = ReadingExercise::whereIn('lesson_id', $lessonIds)
             ->select('id', 'lesson_id', 'text as activity_title')
@@ -288,9 +296,15 @@ class LessonController extends Controller
             ->sortByDesc('created_at')
             ->values();
 
+
+
         // 🔹 Students
         $students = $authUser->students ?? collect();
         // $activeStudents = $students->where('status', 'active')->count();
+
+        $averageAttempts = $totalCount > 0
+        ? round($allActivities->count() / $totalCount, 2)
+        : 0;
 
         return response()->json([
             "overview" => [
@@ -305,30 +319,33 @@ class LessonController extends Controller
                     "title" => "Reading Activities",
                     "description" => "Foundation words and phrases",
                     "totalStudents" => $students->count(),
-                    "completedStudents" => rand(10, $students->count()),
-                    "averageScore" => 85,
+                    "completedStudents" => $students->count(),
+                    "averageScore" => $averageAttempts,
                     "attempts" => $reading->count(),
+                    "totalCompletedActivities" => $totalCount > 0 ? round(($reading->count() / $totalCount) * 100) : 0,
                 ],
                 [
                     "id" => 2,
                     "title" => "Spelling Activities",
                     "description" => "Learning words through spelling",
                     "totalStudents" => $students->count(),
-                    "completedStudents" => rand(10, $students->count()),
-                    "averageScore" => 78,
+                    "completedStudents" => $students->count(),
+                    "averageScore" => $averageAttempts,
                     "attempts" => $spelling->count(),
+                    "totalCompletedActivities" => $totalCount > 0 ? round(($spelling->count() / $totalCount) * 100) : 0,
                 ],
                 [
                     "id" => 3,
                     "title" => "Picture Guessing Activities",
                     "description" => "Fun with pictures and words",
                     "totalStudents" => $students->count(),
-                    "completedStudents" => rand(10, $students->count()),
-                    "averageScore" => 72,
+                    "completedStudents" => $students->count(),
+                    "averageScore" => $averageAttempts,
                     "attempts" => $pictures->count(),
+                    "totalCompletedActivities" => $totalCount > 0 ? round(($pictures->count() / $totalCount) * 100) : 0,
                 ],
             ],
-            "students" => $students->map(function ($student) use ($allActivities) {
+            "students" => $students->map(function ($student) use ($allActivities, $lessons) {
                 $studentAttempts = $allActivities->where('user_id', $student->id)->values();
 
                 return [
@@ -336,7 +353,7 @@ class LessonController extends Controller
                     "name" => $student->name,
                     "completedLessons" => rand(1, 10),
                     "totalAttempts" => $studentAttempts->count(),
-                    "totalLessons" => rand(20, 100),
+                    "totalLessons" => $lessons->count(),
                     "lastActivity" => optional($studentAttempts->first())['created_at'] ?? null,
                     "attemptRecords" => $studentAttempts,
                 ];

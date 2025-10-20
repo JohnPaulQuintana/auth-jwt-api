@@ -30,7 +30,7 @@ class PictureController extends Controller
         $request->validate([
             'lesson_id' => 'required|exists:lessons,id',
             'title' => 'required|string|max:255',
-            'image' => 'required|image|max:2048',
+            'image' => 'required|image',
         ]);
 
         $path = $request->file('image')->store('pictures', 'public');

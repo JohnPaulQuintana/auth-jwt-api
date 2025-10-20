@@ -202,7 +202,7 @@ class UserManagementController extends Controller
             'name'   => 'sometimes|string|max:255',
             'phone'  => 'sometimes|nullable|string|max:20',
             'address' => 'sometimes|nullable|string|max:255',
-            'profile_picture' => 'sometimes|nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_picture' => 'sometimes|nullable|image|mimes:jpg,jpeg,png',
         ]);
         Log::info('Update payload', $data);
         // Handle profile picture upload

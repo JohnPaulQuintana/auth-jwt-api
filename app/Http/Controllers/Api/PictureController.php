@@ -51,7 +51,7 @@ class PictureController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'sometimes|image|max:2048',
+            'image' => 'sometimes|image',
         ]);
 
         $data = ['title' => $request->title];

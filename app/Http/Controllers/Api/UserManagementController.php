@@ -40,6 +40,35 @@ class UserManagementController extends Controller
         ], 403);
     }
 
+    public function notMyStudent(Request $request)
+    {
+        $perPage = $request->query('per_page', 100);
+        $authUser = auth()->user();
+
+        // Only users who can have students
+        if (in_array($authUser->role, ['teacher', 'developer'])) {
+            // Get IDs of the teacher/developer's students
+            $myStudentIds = $authUser->students()->pluck('users.id');
+
+            // Fetch users who are NOT their students, and exclude teachers/developers
+            $users = User::whereNotIn('id', $myStudentIds)
+                ->where('id', '!=', $authUser->id) // exclude self
+                ->whereNotIn('role', ['developer', 'teacher', 'administrator']) // exclude specific roles
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+
+
+            return $this->paginated($users, 'Users not under your students fetched successfully');
+        }
+
+        // Other roles → forbidden
+        return response()->json([
+            'success' => false,
+            'message' => 'You do not have permission to view users.',
+        ], 403);
+    }
+
+
 
 
     public function updateRole(Request $request, $id)
@@ -103,6 +132,31 @@ class UserManagementController extends Controller
 
     //     return $this->success($user, 'User created successfully and email notification sent.', 201);
     // }
+
+    public function assignStudents(Request $request)
+    {
+        $authUser = auth()->user();
+
+        if (!in_array($authUser->role, ['teacher', 'developer'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to assign students.',
+            ], 403);
+        }
+
+        $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:users,id',
+        ]);
+
+        // Attach or sync students to the teacher/developer
+        $authUser->students()->syncWithoutDetaching($request->student_ids);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Students assigned successfully.',
+        ]);
+    }
 
     //updated using realationship table
     public function store(Request $request)

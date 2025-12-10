@@ -28,14 +28,39 @@ class LessonController extends Controller
             ], 400);
         }
 
-        $lessons = Lesson::where('teacher_id', $teacherId)->get();
+        // 🧩 Fetch lessons with nested relationships
+        $lessons = Lesson::where('teacher_id', $teacherId)
+            ->with([
+                'exercises.attempts',
+                'spelling_activities.attempts',
+                'pictures.attempts',
+            ])
+            ->get();
 
+        // 👨‍🏫 Fetch teacher and count their students
+        $teacher = \App\Models\User::withCount('students')->find($teacherId);
+
+        if (!$teacher) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Teacher not found',
+                'data' => null,
+            ], 404);
+        }
+
+        // ✅ Combine results
         return response()->json([
             'status' => 'success',
             'message' => 'Lessons fetched successfully',
-            'data' => $lessons,
+            'data' => [
+                'teacher_id' => $teacherId,
+                'total_students' => $teacher->students_count,
+                'lessons' => $lessons,
+            ],
         ], 200);
     }
+
+
 
     public function store(Request $request)
     {
@@ -98,7 +123,14 @@ class LessonController extends Controller
         $teacherId = $teacher->id;
 
         // Get lessons from that teacher
-        $lessons = $teacher->lessons()->get(['id', 'title', 'description', 'teacher_id']);
+        $lessons = Lesson::where('teacher_id', $teacherId)
+            ->with([
+                'exercises.attempts',
+                'spelling_activities.attempts',
+                'pictures.attempts',
+            ])
+            ->get(['id', 'title', 'description', 'teacher_id']);
+
 
         return response()->json([
             'success' => true,
@@ -106,7 +138,8 @@ class LessonController extends Controller
             'data' => [
                 'student_id' => $student->id,
                 'teacher_id' => $teacherId,
-                'lessons' => $lessons
+                'lessons' => $lessons,
+                'total_students' => 1
             ],
             'errors' => null
         ]);
@@ -303,8 +336,8 @@ class LessonController extends Controller
         // $activeStudents = $students->where('status', 'active')->count();
 
         $averageAttempts = $totalCount > 0
-        ? round($allActivities->count() / $totalCount, 2)
-        : 0;
+            ? round($allActivities->count() / $totalCount, 2)
+            : 0;
 
         return response()->json([
             "overview" => [
@@ -359,5 +392,107 @@ class LessonController extends Controller
                 ];
             })->values(),
         ]);
+    }
+
+    // public function report_screen(Request $request, $id, $type)
+    // {
+    //     $authUser = $request->user();
+
+    //     // Fetch all lessons for the teacher
+    //     $lessons = Lesson::where('teacher_id', $id)->get();
+    //     $lessonIds = $lessons->pluck('id');
+
+    //     // Collect all activities depending on the type
+    //     if (strtolower($type) === 'all') {
+    //         $activities = collect()
+    //             ->concat($this->getActivityData($lessonIds, 'reading'))
+    //             ->concat($this->getActivityData($lessonIds, 'spelling'))
+    //             ->concat($this->getActivityData($lessonIds, 'picture'));
+    //     } else {
+    //         $activities = $this->getActivityData($lessonIds, $type);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $activities->sortByDesc('created_at')->values(),
+    //     ]);
+    // }
+
+
+    private function getActivityData($lessonIds, $type)
+    {
+        switch (strtolower($type)) {
+            case 'reading':
+                return ReadingExercise::whereIn('lesson_id', $lessonIds)
+                    ->select('id', 'lesson_id', 'text as activity_title')
+                    ->get()
+                    ->flatMap(function ($item) {
+                        return DB::table('reading_attempts')
+                            ->where('reading_exercise_id', $item->id)
+                            ->select('attempts', 'type', 'created_at', 'user_id')
+                            ->get()
+                            ->map(function ($attempt) use ($item) {
+                                return [
+                                    'id' => $item->id,
+                                    'user_id' => $attempt->user_id,
+                                    'lesson_id' => $item->lesson_id,
+                                    'activity_type' => $attempt->type ?? 'reading',
+                                    'activity_title' => $item->activity_title,
+                                    'attempts' => $attempt->attempts ?? 0,
+                                    'created_at' => $attempt->created_at,
+                                    'completed' => true,
+                                ];
+                            });
+                    });
+
+            case 'spelling':
+                return SpellingActivity::whereIn('lesson_id', $lessonIds)
+                    ->select('id', 'lesson_id', 'word as activity_title')
+                    ->get()
+                    ->flatMap(function ($item) {
+                        return DB::table('spelling_attempts')
+                            ->where('spelling_activity_id', $item->id)
+                            ->select('attempts', 'type', 'created_at', 'user_id')
+                            ->get()
+                            ->map(function ($attempt) use ($item) {
+                                return [
+                                    'id' => $item->id,
+                                    'user_id' => $attempt->user_id,
+                                    'lesson_id' => $item->lesson_id,
+                                    'activity_type' => $attempt->type ?? 'spelling',
+                                    'activity_title' => $item->activity_title,
+                                    'attempts' => $attempt->attempts ?? 0,
+                                    'created_at' => $attempt->created_at,
+                                    'completed' => true,
+                                ];
+                            });
+                    });
+
+            case 'picture':
+                return Picture::whereIn('lesson_id', $lessonIds)
+                    ->select('id', 'lesson_id', 'title as activity_title')
+                    ->get()
+                    ->flatMap(function ($item) {
+                        return DB::table('picture_attempts')
+                            ->where('picture_id', $item->id)
+                            ->select('attempts', 'type', 'created_at', 'user_id')
+                            ->get()
+                            ->map(function ($attempt) use ($item) {
+                                return [
+                                    'id' => $item->id,
+                                    'user_id' => $attempt->user_id,
+                                    'lesson_id' => $item->lesson_id,
+                                    'activity_type' => $attempt->type ?? 'picture',
+                                    'activity_title' => $item->activity_title,
+                                    'attempts' => $attempt->attempts ?? 0,
+                                    'created_at' => $attempt->created_at,
+                                    'completed' => true,
+                                ];
+                            });
+                    });
+
+            default:
+                return collect();
+        }
     }
 }

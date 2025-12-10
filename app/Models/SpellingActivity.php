@@ -9,7 +9,7 @@ class SpellingActivity extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['lesson_id', 'word', 'image', 'missing_letter_indexes'];
+    protected $fillable = ['lesson_id', 'word', 'image', 'missing_letter_indexes', 'descriptions'];
     protected $casts = [
         'missing_letter_indexes' => 'array',
     ];

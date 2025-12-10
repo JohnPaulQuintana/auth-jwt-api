@@ -31,6 +31,7 @@ class PictureController extends Controller
             'lesson_id' => 'required|exists:lessons,id',
             'title' => 'required|string|max:255',
             'image' => 'required|image',
+            'descriptions' => 'nullable|string'
         ]);
 
         $path = $request->file('image')->store('pictures', 'public');
@@ -39,6 +40,7 @@ class PictureController extends Controller
             'lesson_id' => $request->lesson_id,
             'title' => $request->title,
             'image_path' => $path,
+            'descriptions' => $request->descriptions
         ]);
 
         $picture->image_url = url(Storage::url($picture->image_path));
@@ -52,9 +54,10 @@ class PictureController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'sometimes|image',
+            'descriptions' => 'nullable|string'
         ]);
 
-        $data = ['title' => $request->title];
+        $data = ['title' => $request->title, 'descriptions' => $request->descriptions];
 
         // If a new image is uploaded, delete old one and save new
         if ($request->hasFile('image')) {

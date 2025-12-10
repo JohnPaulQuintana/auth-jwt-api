@@ -8,7 +8,7 @@ class Picture extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['lesson_id', 'title', 'image_path'];
+    protected $fillable = ['lesson_id', 'title', 'image_path', 'descriptions'];
 
     public function lesson()
     {

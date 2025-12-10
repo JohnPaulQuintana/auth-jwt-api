@@ -29,6 +29,7 @@ class SpellingActivityController extends Controller
             'image' => 'nullable|string',
             'missing_letter_indexes' => 'required|array|min:1',
             'missing_letter_indexes.*' => 'integer|min:0',
+            'descriptions' => 'nullable|string',
         ]);
 
         $activity = SpellingActivity::create($data);
@@ -50,6 +51,7 @@ class SpellingActivityController extends Controller
             'image' => 'nullable|string',
             'missing_letter_indexes' => 'sometimes|array|min:1',
             'missing_letter_indexes.*' => 'integer|min:0',
+            'descriptions' => 'nullable|string',
         ]);
 
         $activity->update($data);

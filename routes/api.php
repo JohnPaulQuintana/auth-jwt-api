@@ -49,6 +49,8 @@ Route::middleware(['auth:api'])->group(function () {
     // Only admin & dev can manage users
     Route::middleware(['role:administrator,developer,teacher'])->group(function () {
         Route::get('/users', [UserManagementController::class, 'index']);
+        Route::get('/users/not-my-students', [UserManagementController::class, 'notMyStudent']);
+        Route::post('/users/assign', [UserManagementController::class, 'assignStudents']);
         Route::post('/users', [UserManagementController::class, 'store']);
         Route::put('/users/{id}/role', [UserManagementController::class, 'updateRole']);
 
@@ -76,7 +78,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/teacher/{id}/stats', [LessonController::class, 'home_screen']);
 
         //report screen for teacher
-        Route::get('/teacher/{id}/report', [LessonController::class, 'report_screen']);
+        Route::get('/teacher/report/{id}/{type}', [LessonController::class, 'report_screen']);
 
         //Reading Exercise Routes
         Route::get('/lessons/{id}/exercises', [ReadingExerciseController::class, 'index']);

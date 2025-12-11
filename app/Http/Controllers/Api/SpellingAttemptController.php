@@ -78,7 +78,7 @@ class SpellingAttemptController extends Controller
         $all_attempts = $all_attempts->sortByDesc('created_at')->values();
 
         // Log the merged collection for debugging
-        Log::info('Merged user attempts:', $all_attempts->toArray());
+        // Log::info('Merged user attempts:', $all_attempts->toArray());
 
         return response()->json([
             'message' => 'User attempts retrieved successfully',

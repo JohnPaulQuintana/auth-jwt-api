@@ -129,11 +129,15 @@ class LessonController extends Controller
         $total_student_count = $teachers->count();
         $teacherId = $teacher->id;
 
+        $count = DB::table('relationship_table')
+        ->where('teacher_id', $teacherId)
+        ->count();
+
         // 🔥 Log extra details
         Log::info('Teachers debug details', [
             'first_teacher' => $teacher,
             'first_teacher_id' => $teacherId,
-            'total_count' => $total_student_count,
+            'total_count' => $count,
         ]);
 
         // Get lessons from that teacher

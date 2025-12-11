@@ -20,12 +20,12 @@ class ReadingAttemptController extends Controller
         ]);
 
         // Log the incoming payload
-        Log::info('Reading attempt received', $request->all());
+        // Log::info('Reading attempt received', $request->all());
 
         $attempt = ReadingAttempt::create($validated);
 
         // Log after saving to DB
-        Log::info('Reading attempt saved', ['id' => $attempt->id] + $validated);
+        // Log::info('Reading attempt saved', ['id' => $attempt->id] + $validated);
 
         return response()->json([
             'message' => 'Reading attempt recorded successfully',

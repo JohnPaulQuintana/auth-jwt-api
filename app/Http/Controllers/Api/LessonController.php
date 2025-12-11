@@ -110,7 +110,7 @@ class LessonController extends Controller
         $teachers = $student->teachers;
 
         // 🔥 LOG THE TEACHERS AND RAW ARRAY
-        logger()->info('Teachers for student ' . $id, [
+        Log::info('Teachers for student ' . $id, [
             'teachers_raw' => $teachers->toArray(),
             'count' => $teachers->count(),
         ]);
@@ -130,7 +130,7 @@ class LessonController extends Controller
         $teacherId = $teacher->id;
 
         // 🔥 Log extra details
-        logger()->info('Teachers debug details', [
+        Log::info('Teachers debug details', [
             'first_teacher' => $teacher,
             'first_teacher_id' => $teacherId,
             'total_count' => $total_student_count,

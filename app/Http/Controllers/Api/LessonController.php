@@ -120,6 +120,7 @@ class LessonController extends Controller
 
         // Get first teacher's id
         $teacher = $teachers->first();
+        $total_student_count = $teachers->count();
         $teacherId = $teacher->id;
 
         // Get lessons from that teacher
@@ -139,7 +140,7 @@ class LessonController extends Controller
                 'student_id' => $student->id,
                 'teacher_id' => $teacherId,
                 'lessons' => $lessons,
-                'total_students' => 1
+                'total_students' => $total_student_count
             ],
             'errors' => null
         ]);

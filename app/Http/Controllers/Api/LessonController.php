@@ -157,7 +157,7 @@ class LessonController extends Controller
                 'student_id' => $student->id,
                 'teacher_id' => $teacherId,
                 'lessons' => $lessons,
-                'total_students' => $total_student_count
+                'total_students' => $count
             ],
             'errors' => null
         ]);

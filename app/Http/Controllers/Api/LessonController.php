@@ -109,6 +109,12 @@ class LessonController extends Controller
         // Get teachers collection
         $teachers = $student->teachers;
 
+        // 🔥 LOG THE TEACHERS AND RAW ARRAY
+        logger()->info('Teachers for student ' . $id, [
+            'teachers_raw' => $teachers->toArray(),
+            'count' => $teachers->count(),
+        ]);
+
         if ($teachers->isEmpty()) {
             return response()->json([
                 'success' => false,
@@ -122,6 +128,13 @@ class LessonController extends Controller
         $teacher = $teachers->first();
         $total_student_count = $teachers->count();
         $teacherId = $teacher->id;
+
+        // 🔥 Log extra details
+        logger()->info('Teachers debug details', [
+            'first_teacher' => $teacher,
+            'first_teacher_id' => $teacherId,
+            'total_count' => $total_student_count,
+        ]);
 
         // Get lessons from that teacher
         $lessons = Lesson::where('teacher_id', $teacherId)
